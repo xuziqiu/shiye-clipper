@@ -2,6 +2,8 @@
 
 > Batch full-page web capture for humans and AI agents.
 
+[![CI](https://github.com/xuziqiu/shiye-clipper/actions/workflows/ci.yml/badge.svg)](https://github.com/xuziqiu/shiye-clipper/actions/workflows/ci.yml)
+
 拾页 Shiye 是一个本地优先的 Windows 批量网页截图工具。它使用本机 Microsoft Edge 逐屏滚动网页、等待懒加载内容，并将页面保存为完整长图。
 
 它同时提供：
@@ -16,23 +18,38 @@ Shiye 本身不接入大模型，也不会把截图、网址或浏览器档案�
 
 ## 项目状态
 
-当前版本为 `0.3.0`，定位是 Windows 本地应用的公开测试版。
+当前版本为 `0.3.1`，定位是 Windows 本地应用的公开测试版。
 
 - 支持 Windows 10/11；
 - 需要 Node.js 20.9 或更高版本；
 - 需要本机安装 Microsoft Edge；
 - 当前不提供云端托管服务或免安装桌面程序。
 
-## 快速开始
+## 先选你要怎么用
 
-下载或克隆仓库后，在项目目录运行：
+| 你的目的 | 最简单的入口 |
+| --- | --- |
+| 不想碰命令行，只想粘贴网址截图 | 安装一次后，双击 `启动拾页控制台.cmd` |
+| 自己批量运行或写脚本 | 使用 `shiye.cmd capture` |
+| 让 Codex、Claude Code 等 AI 执行 | 把下面的“可复制提示词”发给 AI |
+
+Shiye 里的“AI 驱动”是指 AI 可以调用它的 CLI，不是把大模型接进截图工具。网址、图片和登录档案仍然保存在本机。
+
+## 普通用户：第一次安装
+
+1. 从 [Releases](https://github.com/xuziqiu/shiye-clipper/releases/latest) 下载 Source code (zip)，解压到一个固定目录。
+2. 确认电脑已经安装 [Node.js 20.9+](https://nodejs.org/) 和 Microsoft Edge。
+3. 双击 `安装拾页.cmd`，等待窗口显示“安装完成”。这一步只需要做一次。
+4. 以后双击 `启动拾页控制台.cmd`，粘贴网址并点击“开始完整截图”。
+
+如果你习惯 PowerShell，也可以手动安装：
 
 ```powershell
 npm ci
 npm run build
 ```
 
-普通用户可以双击：
+安装完成后，普通用户可以双击：
 
 ```text
 启动拾页控制台.cmd
@@ -132,7 +149,24 @@ Get-Content .\examples\urls.txt | .\shiye.cmd capture --output "D:\网页剪报"
 
 ## AI 和自动化调用
 
-AI Agent 应优先使用 `--json`。成功结果写入 stdout，执行进度写入 stderr：
+### 可直接复制给 AI 的提示词
+
+把下面这段连同网址列表一起发给能够操作本机终端的 AI Agent：
+
+```text
+请在 Shiye 项目目录中按照 AGENTS.md 执行批量网页截图。
+如果尚未安装，先运行：.\安装拾页.cmd --no-pause
+将我提供的网址保存为列表文件，然后运行：
+.\shiye.cmd capture <列表文件> --output "D:\网页剪报" --quality ultra --filename sequence --retry 1 --json
+只把 stdout 当作最终 JSON；stderr 是进度信息。完成后告诉我成功数、失败数、图片目录和 results.json 路径。
+不要使用我的日常 Edge 档案，不要上传网址、Cookie、截图或 results.json。遇到登录、验证码或付费墙时停止并告诉我。
+```
+
+把 `D:\网页剪报` 改成你想保存图片的位置即可。AI 必须能够在你的 Windows 电脑上执行命令；普通网页聊天机器人如果没有本机终端权限，就不能直接调用 Shiye。
+
+### CLI 契约
+
+AI Agent 应始终使用 `--json`。最终结果只写入 stdout，执行进度写入 stderr：
 
 ```powershell
 .\shiye.cmd capture .\examples\urls.txt --output "D:\网页剪报" --retry 1 --json
@@ -143,6 +177,8 @@ AI Agent 应优先使用 `--json`。成功结果写入 stdout，执行进度写�
 - `0`：全部成功；
 - `2`：任务执行完成，但存在最终失败项目；
 - `1`：命令、输入或配置错误。
+
+JSON 包含 `ok`、`status`、`total`、`completed`、`failed`、`outputDirectory`、`manifestPath` 和逐项结果。完整的 Agent 工作流、重试方式和安全边界见 [AI Agent 调用指南](docs/AI_AGENT_GUIDE.md)。仓库根目录的 [AGENTS.md](AGENTS.md) 可供支持该约定的编程 Agent 自动读取。
 
 ## 输出
 
