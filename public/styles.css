@@ -65,6 +65,7 @@ textarea::placeholder { color: #a5a196; }
 .path-input button { width: 39px; border: 1px solid var(--line); border-left: 0; background: var(--ink); color: white; cursor: pointer; }
 .setting-block p { margin: 6px 0 0; color: var(--muted); font-size: 9px; }
 .settings-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+.settings-row.single-setting { grid-template-columns: 1fr; }
 .settings-row label { display: grid; gap: 7px; }
 select { width: 100%; padding: 10px 30px 10px 10px; border: 1px solid var(--line); border-radius: 0; color: var(--ink); background: #f5f2eb; font-size: 10px; }
 .visible-toggle { display: flex; align-items: center; gap: 10px; margin-top: 23px; cursor: pointer; }

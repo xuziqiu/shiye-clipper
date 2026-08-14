@@ -5,10 +5,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import express from "express";
+import { findBrowser } from "./capture.js";
 import { resolveUrlInputs } from "./input.js";
 import { ManifestWriter, readManifest } from "./manifest.js";
 import { createManifest, runManifest, type RunControl } from "./runner.js";
-import type { CaptureFormat, CaptureItem, JobManifest } from "./types.js";
+import type { BrowserPreference, CaptureFormat, CaptureItem, JobManifest } from "./types.js";
 import { clampInteger, timestampForPath } from "./utils.js";
 
 const execFileAsync = promisify(execFile);
@@ -289,6 +290,9 @@ export async function startUiServer(options: UiServerOptions = {}): Promise<{ se
       const requestedScale = Number(request.body?.qualityScale);
       const qualityScale = requestedScale === 1.5 || requestedScale === 2 ? requestedScale : 1;
       const filenameMode = request.body?.filenameMode === "sequence" ? "sequence" : "title";
+      const browserValue = String(request.body?.browser || "auto");
+      const requestedBrowser: BrowserPreference = browserValue === "edge" || browserValue === "chrome" ? browserValue : "auto";
+      const resolvedBrowser = await findBrowser(requestedBrowser);
       const useProfile = request.body?.useProfile === true;
       const requestedConcurrency = clampInteger(request.body?.concurrency ?? 1, 1, 8, "并发数");
       const outputDirectory = path.join(outputRoot, timestampForPath());
@@ -301,9 +305,10 @@ export async function startUiServer(options: UiServerOptions = {}): Promise<{ se
         visible: request.body?.visible === true,
         viewportWidth: 1440,
         viewportHeight: 900,
+        browser: resolvedBrowser.kind,
         qualityScale,
         filenameMode,
-        profileDirectory: useProfile ? path.join(rootDir, "data", "browser-profile") : undefined,
+        profileDirectory: useProfile ? path.join(rootDir, "data", `browser-profile-${resolvedBrowser.kind}`) : undefined,
         cookiePreference: ["reject", "accept", "none"].includes(request.body?.cookiePreference)
           ? request.body.cookiePreference
           : "reject",
@@ -334,8 +339,10 @@ export async function startUiServer(options: UiServerOptions = {}): Promise<{ se
       return response.status(400).json({ error: "没有需要重试的失败项" });
     }
     if (request.body?.visible === true) {
+      const resolvedBrowser = await findBrowser(job.settings.browser || "auto", job.settings.browserPath);
       job.settings.visible = true;
-      job.settings.profileDirectory = path.join(rootDir, "data", "browser-profile");
+      job.settings.browser = resolvedBrowser.kind;
+      job.settings.profileDirectory = path.join(rootDir, "data", `browser-profile-${resolvedBrowser.kind}`);
       job.settings.concurrency = 1;
     }
     job.status = "queued";

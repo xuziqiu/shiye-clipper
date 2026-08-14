@@ -2,13 +2,20 @@ import { mkdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { chromium, type Browser, type BrowserContext, type Page } from "playwright-core";
 import sharp from "sharp";
-import type { CaptureItem, CaptureSettings, PageMetadata } from "./types.js";
+import type { BrowserPreference, CaptureItem, CaptureSettings, PageMetadata } from "./types.js";
 import { safeFilename } from "./utils.js";
 
 const EDGE_PATHS = [
-  "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
-  "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe"
-];
+  process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, "Microsoft", "Edge", "Application", "msedge.exe"),
+  process.env.ProgramFiles && path.join(process.env.ProgramFiles, "Microsoft", "Edge", "Application", "msedge.exe"),
+  process.env["ProgramFiles(x86)"] && path.join(process.env["ProgramFiles(x86)"], "Microsoft", "Edge", "Application", "msedge.exe")
+].filter((candidate): candidate is string => Boolean(candidate));
+
+const CHROME_PATHS = [
+  process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, "Google", "Chrome", "Application", "chrome.exe"),
+  process.env.ProgramFiles && path.join(process.env.ProgramFiles, "Google", "Chrome", "Application", "chrome.exe"),
+  process.env["ProgramFiles(x86)"] && path.join(process.env["ProgramFiles(x86)"], "Google", "Chrome", "Application", "chrome.exe")
+].filter((candidate): candidate is string => Boolean(candidate));
 
 const browserIdentity = {
   locale: "zh-CN",
@@ -46,18 +53,60 @@ export interface CaptureSession {
   close: () => Promise<void>;
 }
 
-export async function findEdge(): Promise<string> {
-  const override = process.env.CLIPPER_EDGE_PATH;
-  const candidates = override ? [override, ...EDGE_PATHS] : EDGE_PATHS;
+export interface ResolvedBrowser {
+  kind: Exclude<BrowserPreference, "auto">;
+  executablePath: string;
+}
+
+async function findFirstExecutable(candidates: string[]): Promise<string | undefined> {
   for (const candidate of candidates) {
     try {
-      await stat(candidate);
-      return candidate;
+      const details = await stat(candidate);
+      if (details.isFile()) return candidate;
     } catch {
       // Try the next installation location.
     }
   }
-  throw new Error("未找到 Microsoft Edge；可用 CLIPPER_EDGE_PATH 指定 msedge.exe");
+  return undefined;
+}
+
+export async function findEdge(): Promise<string> {
+  const override = process.env.SHIYE_EDGE_PATH || process.env.CLIPPER_EDGE_PATH;
+  const candidates = override ? [override, ...EDGE_PATHS] : EDGE_PATHS;
+  const executable = await findFirstExecutable(candidates);
+  if (executable) return executable;
+  throw new Error("未找到 Microsoft Edge；可用 --browser-path 或 SHIYE_EDGE_PATH 指定 msedge.exe");
+}
+
+export async function findChrome(): Promise<string> {
+  const override = process.env.SHIYE_CHROME_PATH || process.env.CLIPPER_CHROME_PATH;
+  const candidates = override ? [override, ...CHROME_PATHS] : CHROME_PATHS;
+  const executable = await findFirstExecutable(candidates);
+  if (executable) return executable;
+  throw new Error("未找到 Google Chrome；可用 --browser-path 或 SHIYE_CHROME_PATH 指定 chrome.exe");
+}
+
+export async function findBrowser(preference: BrowserPreference = "auto", customPath?: string): Promise<ResolvedBrowser> {
+  if (customPath) {
+    const executable = await findFirstExecutable([customPath]);
+    if (!executable) throw new Error(`浏览器路径不存在或不是文件：${customPath}`);
+    const executableName = path.basename(executable).toLowerCase();
+    const inferredKind = executableName.includes("chrome") || executableName.includes("chromium") ? "chrome" : "edge";
+    return { kind: preference === "auto" ? inferredKind : preference, executablePath: executable };
+  }
+
+  if (preference === "edge") return { kind: "edge", executablePath: await findEdge() };
+  if (preference === "chrome") return { kind: "chrome", executablePath: await findChrome() };
+
+  try {
+    return { kind: "edge", executablePath: await findEdge() };
+  } catch {
+    try {
+      return { kind: "chrome", executablePath: await findChrome() };
+    } catch {
+      throw new Error("未找到可用浏览器；请安装 Microsoft Edge 或 Google Chrome，或使用 --browser-path 指定 Chromium 浏览器");
+    }
+  }
 }
 
 function contextOptions(settings: CaptureSettings) {
@@ -69,9 +118,9 @@ function contextOptions(settings: CaptureSettings) {
 }
 
 export async function launchCaptureSession(settings: CaptureSettings): Promise<CaptureSession> {
-  const executablePath = await findEdge();
+  const resolvedBrowser = await findBrowser(settings.browser || "auto", settings.browserPath);
   const launchOptions = {
-    executablePath,
+    executablePath: resolvedBrowser.executablePath,
     headless: !settings.visible,
     args: ["--disable-blink-features=AutomationControlled"]
   };

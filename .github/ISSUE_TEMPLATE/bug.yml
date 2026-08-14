@@ -12,7 +12,7 @@ body:
     id: version
     attributes:
       label: Shiye 版本
-      placeholder: 例如 0.3.0
+      placeholder: 例如 0.4.0
     validations:
       required: true
 
@@ -20,8 +20,8 @@ body:
     id: environment
     attributes:
       label: 运行环境
-      description: Windows、Node.js 和 Microsoft Edge 版本
-      placeholder: Windows 11 / Node 24 / Edge 版本号
+      description: Windows、Node.js 和所用浏览器版本
+      placeholder: Windows 11 / Node 24 / Edge 或 Chrome 版本号
     validations:
       required: true
 
