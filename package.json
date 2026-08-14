@@ -6,6 +6,14 @@
   "description": "Local-first batch full-page web capture for humans and AI agents.",
   "author": "Xu Ziqiu",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xuziqiu/shiye-clipper.git"
+  },
+  "homepage": "https://github.com/xuziqiu/shiye-clipper#readme",
+  "bugs": {
+    "url": "https://github.com/xuziqiu/shiye-clipper/issues"
+  },
   "engines": {
     "node": ">=20.9.0"
   },
