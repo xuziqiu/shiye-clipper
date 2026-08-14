@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="拾页 Shiye 本地端到端测试页面" />
+    <title>拾页完整截图验证</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; color: #17211b; background: #ece9df; font-family: "Microsoft YaHei", sans-serif; }
+      header { min-height: 760px; display: grid; place-content: center; padding: 80px; background: #183f31; color: #f4efe2; }
+      header small { color: #e06c3d; letter-spacing: .2em; }
+      h1 { margin: 20px 0; font-family: Georgia, serif; font-size: 72px; }
+      header p { width: 580px; font-size: 18px; line-height: 1.8; }
+      section { min-height: 900px; display: grid; grid-template-columns: 180px 1fr; gap: 50px; padding: 90px 12vw; border-bottom: 1px solid #c9c4b7; }
+      section span { color: #d6532e; font-family: Georgia, serif; font-size: 40px; }
+      section h2 { margin-top: 0; font-size: 36px; }
+      section p { max-width: 720px; color: #5a625c; line-height: 2; }
+      .lazy { background: #d9d2c3; }
+    </style>
+  </head>
+  <body>
+    <header><small>LOCAL END-TO-END TEST</small><h1>拾页完整截图验证</h1><p>这个页面用于确认 Shiye 能够逐屏滚动、触发底部懒加载，并把整个页面保存为一张长图。</p></header>
+    <section><span>01</span><div><h2>网页已打开</h2><p>截图引擎在本机 Edge 中载入页面，不需要显示浏览器窗口。</p></div></section>
+    <section><span>02</span><div><h2>自动滚动</h2><p>引擎按视口高度逐步向下滚动，并在每一步等待网页加载新内容。</p></div></section>
+    <section><span>03</span><div><h2>等待页面稳定</h2><p>页面高度连续保持稳定后，才会回到顶部并生成完整截图。</p></div></section>
+    <script>
+      let appended = false;
+      addEventListener("scroll", () => {
+        if (!appended && scrollY + innerHeight > document.body.scrollHeight - 120) {
+          appended = true;
+          const section = document.createElement("section");
+          section.className = "lazy";
+          section.innerHTML = "<span>04</span><div><h2>懒加载内容已出现</h2><p>如果完整长图中包含这一屏，说明自动滚动和动态页面高度检测都已生效。</p></div>";
+          document.body.append(section);
+        }
+      });
+    </script>
+  </body>
+</html>

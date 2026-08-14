@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>拾页 Shiye · 网页剪报控制台</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/" aria-label="拾页 Shiye 首页">
+          <span class="brand-mark">拾</span>
+          <span class="brand-copy"><strong>拾页 Shiye</strong><small>WEB CLIPPER</small></span>
+        </a>
+        <nav aria-label="主导航">
+          <a class="nav-item active" href="#new-task"><span>＋</span>新建任务</a>
+          <a class="nav-item" href="#jobs"><span>⌁</span>任务记录</a>
+        </nav>
+        <div class="local-card">
+          <span class="online-dot"></span>
+          <div><strong>本地模式</strong><small>数据保存在这台电脑</small></div>
+        </div>
+        <p class="version">拾页 Shiye · 0.3</p>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <div>
+            <p id="today"></p>
+            <h1>网页剪报控制台</h1>
+          </div>
+          <div class="topbar-note"><i></i>截图引擎已就绪</div>
+        </header>
+
+        <section id="new-task" class="composer panel">
+          <div class="panel-heading">
+            <div><span class="step">01</span><div><h2>新建批量任务</h2><p>粘贴网址或导入列表文件</p></div></div>
+            <span id="url-count" class="count-badge">0 个网址</span>
+          </div>
+
+          <form id="capture-form">
+            <div class="composer-grid">
+              <div class="input-area">
+                <div class="field-label"><label for="urls">网页地址</label><button id="import-button" type="button" class="text-button">导入 TXT / CSV / JSON</button></div>
+                <textarea id="urls" spellcheck="false" placeholder="每行粘贴一个网址，例如：&#10;https://example.com/news/1&#10;https://example.com/news/2" required></textarea>
+                <input id="file-input" type="file" accept=".txt,.csv,.tsv,.json,text/plain,text/csv,application/json" hidden />
+              </div>
+
+              <div class="settings-area">
+                <div class="setting-block output-block">
+                  <label for="output-root">保存位置</label>
+                  <div class="path-input"><input id="output-root" type="text" /><button id="browse-button" type="button" title="选择文件夹">…</button></div>
+                  <p>每个任务会自动建立一个时间子文件夹</p>
+                </div>
+
+                <div class="settings-row">
+                  <label>同时处理<select id="concurrency"><option value="1">1 个网页</option><option value="2">2 个网页</option><option value="3">3 个网页</option><option value="4">4 个网页</option></select></label>
+                  <label>失败重试<select id="retries"><option value="0">不重试</option><option value="1" selected>1 次</option><option value="2">2 次</option><option value="3">3 次</option></select></label>
+                </div>
+
+                <div class="settings-row">
+                  <label>图片格式<select id="format"><option value="png">PNG · 无损</option><option value="jpeg">JPEG · 较小体积</option></select></label>
+                  <label>截图清晰度<select id="quality-scale"><option value="1">标准 1× · 约 1440px</option><option value="1.5">高清 1.5× · 约 2160px</option><option value="2">超清 2× · 约 2880px</option></select></label>
+                </div>
+
+                <div class="settings-row">
+                  <label>图片命名<select id="filename-mode"><option value="title">网页标题＋尾码</option><option value="sequence">数字序号 · 0001…</option></select></label>
+                  <label>页面超时<select id="timeout"><option value="30">30 秒</option><option value="60" selected>60 秒</option><option value="120">120 秒</option><option value="300">5 分钟</option></select></label>
+                </div>
+
+                <div class="settings-row">
+                  <label>Cookie 处理<select id="cookie-preference"><option value="reject" selected>优先拒绝非必要项</option><option value="accept">接受全部</option><option value="none">不自动处理</option></select></label>
+                  <label>最长页面<select id="max-height"><option value="30000">3 万像素</option><option value="60000" selected>6 万像素</option><option value="100000">10 万像素</option><option value="200000">20 万像素</option></select></label>
+                </div>
+
+                <label class="visible-toggle compact-toggle">
+                  <input id="use-profile" type="checkbox" />
+                  <span class="switch"></span>
+                  <span><strong>保存网站登录状态</strong><small>使用 Shiye 专用档案，并发固定为 1</small></span>
+                </label>
+
+                <label class="visible-toggle compact-toggle">
+                  <input id="visible" type="checkbox" />
+                  <span class="switch"></span>
+                  <span><strong>显示 Edge 执行窗口</strong><small>登录、验证码等页面建议开启</small></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="submit-row">
+              <p id="form-message" role="alert"></p>
+              <button id="submit-button" class="primary-button" type="submit"><span>开始完整截图</span><b>→</b></button>
+            </div>
+          </form>
+        </section>
+
+        <section id="jobs" class="jobs-section">
+          <div class="section-heading">
+            <div><span class="step">02</span><div><h2>任务记录</h2><p>实时查看截图进度和结果</p></div></div>
+            <button id="refresh-button" class="text-button" type="button">立即刷新</button>
+          </div>
+          <div id="empty-state" class="empty-state panel">
+            <div class="empty-icon">↘</div>
+            <h3>还没有剪报任务</h3>
+            <p>在上方粘贴几个网址，完成的长图会显示在这里。</p>
+          </div>
+          <div id="job-list" class="job-list" aria-live="polite"></div>
+        </section>
+      </main>
+    </div>
+    <div id="toast" class="toast" role="status"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

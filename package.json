@@ -1,0 +1,43 @@
+{
+  "name": "shiye-clipper",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first batch full-page web capture for humans and AI agents.",
+  "author": "Xu Ziqiu",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "keywords": [
+    "full-page-screenshot",
+    "web-clipper",
+    "playwright",
+    "microsoft-edge",
+    "batch-capture"
+  ],
+  "bin": {
+    "shiye": "dist/src/cli.js",
+    "clipper": "dist/src/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "shiye": "tsx src/cli.ts",
+    "clipper": "tsx src/cli.ts",
+    "check": "tsc --noEmit",
+    "test": "node --import tsx --test tests/unit/*.test.ts",
+    "test:e2e": "node --import tsx --test tests/e2e/*.test.ts",
+    "verify": "npm run check && npm test && npm run build"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "playwright-core": "^1.54.2",
+    "sharp": "^0.35.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.2.1",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.2"
+  }
+}
