@@ -22,6 +22,7 @@ const statusText = {
 };
 
 const itemStatusText = { queued: "等待处理", running: "正在截图", waiting_for_user: "等待人工处理", paused: "已暂停", completed: "截图完成", failed: "截图失败", cancelled: "已取消" };
+const browserText = { auto: "自动浏览器", edge: "Edge", chrome: "Chrome" };
 
 function escapeHtml(value = "") {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
@@ -57,7 +58,7 @@ function renderJobs(jobs) {
         <div class="job-head">
           <div>
             <h3 class="job-id">${escapeHtml(job.jobId)}</h3>
-            <div class="job-meta"><span>${new Date(job.createdAt).toLocaleString("zh-CN")}</span><span>${job.items.length} 个网页</span><span>${escapeHtml(job.settings.format.toUpperCase())} · ${job.settings.qualityScale || 1}×</span><span>${job.settings.filenameMode === "sequence" ? "序号命名" : "标题命名"}</span><span>并发 ${job.settings.concurrency}</span></div>
+            <div class="job-meta"><span>${new Date(job.createdAt).toLocaleString("zh-CN")}</span><span>${job.items.length} 个网页</span><span>${escapeHtml(job.settings.format.toUpperCase())} · ${job.settings.qualityScale || 1}×</span><span>${job.settings.filenameMode === "sequence" ? "序号命名" : "标题命名"}</span><span>${browserText[job.settings.browser || "auto"] || "自动浏览器"}</span><span>并发 ${job.settings.concurrency}</span></div>
           </div>
           <span class="status-chip ${job.status}">${statusText[job.status] || job.status}</span>
         </div>
@@ -134,6 +135,7 @@ form.addEventListener("submit", async (event) => {
         retries: Number($("#retries").value),
         timeoutSeconds: Number($("#timeout").value),
         format: $("#format").value,
+        browser: $("#browser").value,
         qualityScale: Number($("#quality-scale").value),
         filenameMode: $("#filename-mode").value,
         visible: $("#visible").checked,

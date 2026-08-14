@@ -3,6 +3,7 @@ export type JobStatus = "queued" | "running" | "waiting_for_user" | "paused" | "
 export type CaptureFormat = "png" | "jpeg";
 export type CaptureQualityScale = 1 | 1.5 | 2;
 export type FilenameMode = "title" | "sequence";
+export type BrowserPreference = "auto" | "edge" | "chrome";
 
 export interface CaptureSettings {
   outputDirectory: string;
@@ -13,6 +14,8 @@ export interface CaptureSettings {
   visible: boolean;
   viewportWidth: number;
   viewportHeight: number;
+  browser?: BrowserPreference;
+  browserPath?: string;
   qualityScale?: CaptureQualityScale;
   filenameMode?: FilenameMode;
   profileDirectory?: string;

@@ -32,6 +32,7 @@ test("web console creates and completes a clipping job", { timeout: 120_000 }, a
     await page.goto(url);
     await page.getByRole("heading", { name: "网页剪报控制台" }).waitFor();
     await page.locator("#urls").fill(`http://127.0.0.1:${fixtureAddress.port}/long-page.html`);
+    await page.locator("#browser").selectOption("edge");
     await mkdir(path.join(temporary, "artifacts"), { recursive: true });
     await page.screenshot({ path: path.join(temporary, "artifacts", "ui-dashboard.png"), fullPage: true });
     await page.getByRole("button", { name: "开始完整截图" }).click();

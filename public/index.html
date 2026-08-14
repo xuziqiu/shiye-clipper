@@ -22,7 +22,7 @@
           <span class="online-dot"></span>
           <div><strong>本地模式</strong><small>数据保存在这台电脑</small></div>
         </div>
-        <p class="version">拾页 Shiye · 0.3</p>
+        <p class="version">拾页 Shiye · 0.4</p>
       </aside>
 
       <main>
@@ -71,7 +71,11 @@
                 </div>
 
                 <div class="settings-row">
+                  <label>执行浏览器<select id="browser"><option value="auto" selected>自动 · 优先 Edge</option><option value="edge">Microsoft Edge</option><option value="chrome">Google Chrome</option></select></label>
                   <label>Cookie 处理<select id="cookie-preference"><option value="reject" selected>优先拒绝非必要项</option><option value="accept">接受全部</option><option value="none">不自动处理</option></select></label>
+                </div>
+
+                <div class="settings-row single-setting">
                   <label>最长页面<select id="max-height"><option value="30000">3 万像素</option><option value="60000" selected>6 万像素</option><option value="100000">10 万像素</option><option value="200000">20 万像素</option></select></label>
                 </div>
 
@@ -84,7 +88,7 @@
                 <label class="visible-toggle compact-toggle">
                   <input id="visible" type="checkbox" />
                   <span class="switch"></span>
-                  <span><strong>显示 Edge 执行窗口</strong><small>登录、验证码等页面建议开启</small></span>
+                  <span><strong>显示浏览器执行窗口</strong><small>登录、验证码等页面建议开启</small></span>
                 </label>
               </div>
             </div>

@@ -41,5 +41,5 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Edge end-to-end tests
+      - name: Browser end-to-end tests
         run: npm run test:e2e

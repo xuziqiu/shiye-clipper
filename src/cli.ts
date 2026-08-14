@@ -2,10 +2,11 @@
 import path from "node:path";
 import process from "node:process";
 import { createInterface } from "node:readline/promises";
+import { findBrowser } from "./capture.js";
 import { resolveUrlInputs } from "./input.js";
 import { readManifest } from "./manifest.js";
 import { createManifest, runManifest, type ProgressEvent } from "./runner.js";
-import type { CaptureFormat, CaptureQualityScale, CaptureSettings, FilenameMode, JobManifest } from "./types.js";
+import type { BrowserPreference, CaptureFormat, CaptureQualityScale, CaptureSettings, FilenameMode, JobManifest } from "./types.js";
 import { startUiServer } from "./ui-server.js";
 import { clampInteger, timestampForPath } from "./utils.js";
 
@@ -24,10 +25,12 @@ capture 选项：
   -r, --retry <次数>        失败重试次数，0-5（默认：1）
   -t, --timeout <秒>        单页打开超时，10-600（默认：60）
       --format <png|jpeg>   图片格式（默认：png）
+      --browser <浏览器>    auto、edge 或 chrome（默认：auto）
+      --browser-path <路径> 指定 Chromium 浏览器程序路径
       --quality <档位>      standard、high 或 ultra（1×、1.5×、2×）
       --filename <方式>     title 或 sequence（默认：title）
       --viewport <宽x高>    浏览器视口（默认：1440x900）
-      --visible             显示 Edge 执行窗口
+      --visible             显示浏览器执行窗口
       --headless            后台静默运行（默认）
       --profile <目录>      使用专用浏览器登录档案
       --cookie <策略>       reject、accept 或 none（默认：reject）
@@ -72,6 +75,8 @@ function parseCaptureArgs(args: string[]): ParsedCapture {
   let retries = 1;
   let timeoutSeconds = 60;
   let format: CaptureFormat = "png";
+  let browser: BrowserPreference = "auto";
+  let browserPath: string | undefined;
   let qualityScale: CaptureQualityScale = 1;
   let filenameMode: FilenameMode = "title";
   let visible = false;
@@ -103,6 +108,16 @@ function parseCaptureArgs(args: string[]): ParsedCapture {
       const value = valueAfter(args, index, arg);
       if (value !== "png" && value !== "jpeg") throw new Error("--format 只支持 png 或 jpeg");
       format = value;
+      index += 1;
+    } else if (arg === "--browser") {
+      const value = valueAfter(args, index, arg);
+      if (value !== "auto" && value !== "edge" && value !== "chrome") {
+        throw new Error("--browser 只支持 auto、edge 或 chrome");
+      }
+      browser = value;
+      index += 1;
+    } else if (arg === "--browser-path") {
+      browserPath = path.resolve(valueAfter(args, index, arg));
       index += 1;
     } else if (arg === "--quality") {
       const value = valueAfter(args, index, arg);
@@ -164,6 +179,8 @@ function parseCaptureArgs(args: string[]): ParsedCapture {
       visible,
       viewportWidth,
       viewportHeight,
+      browser,
+      browserPath,
       qualityScale,
       filenameMode,
       profileDirectory,
@@ -193,6 +210,7 @@ function summary(manifest: JobManifest) {
     total: manifest.items.length,
     completed,
     failed,
+    browser: manifest.settings.browser || "auto",
     outputDirectory: manifest.settings.outputDirectory,
     manifestPath: manifest.manifestPath,
     items: manifest.items.map((item) => ({
@@ -237,6 +255,8 @@ async function captureCommand(args: string[]): Promise<void> {
   const parsed = parseCaptureArgs(args);
   const stdin = await readStdinIfNeeded(parsed.sources.length > 0);
   const urls = await resolveUrlInputs(parsed.sources, stdin);
+  const resolvedBrowser = await findBrowser(parsed.settings.browser || "auto", parsed.settings.browserPath);
+  parsed.settings.browser = resolvedBrowser.kind;
   const manifest = createManifest(urls, parsed.settings);
   const readline = parsed.settings.visible && process.stdin.isTTY
     ? createInterface({ input: process.stdin, output: process.stderr })
@@ -248,7 +268,7 @@ async function captureCommand(args: string[]): Promise<void> {
         checkpoint: async () => undefined,
         waitForIntervention: async (_manifest: JobManifest, _item: JobManifest["items"][number], reason: string) => {
           if (!readline) throw new Error(`需要人工处理：${reason}；请在控制台中使用可见模式`);
-          await readline.question(`\n页面需要人工处理：${reason}\n请在 Edge 中处理完成后按 Enter 继续…`);
+          await readline.question(`\n页面需要人工处理：${reason}\n请在浏览器中处理完成后按 Enter 继续…`);
         }
       }
     : undefined;
