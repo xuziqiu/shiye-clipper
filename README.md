@@ -1,20 +1,57 @@
 # 拾页 Shiye
 
-> Batch full-page web capture for humans and AI agents.
+> 把一串网址交给它，得到一组完整、清晰、可追踪的网页长图。
+>
+> Turn a URL list into complete, high-resolution page archives — locally.
 
+[![Release](https://img.shields.io/github/v/release/xuziqiu/shiye-clipper?display_name=tag)](https://github.com/xuziqiu/shiye-clipper/releases/latest)
 [![CI](https://github.com/xuziqiu/shiye-clipper/actions/workflows/ci.yml/badge.svg)](https://github.com/xuziqiu/shiye-clipper/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-2f5d50.svg)](LICENSE)
+[![Windows](https://img.shields.io/badge/platform-Windows-2864c7.svg)](#项目状态)
 
-拾页 Shiye 是一个本地优先的 Windows 批量网页截图工具。它使用本机 Microsoft Edge 或 Google Chrome 逐屏滚动网页、等待懒加载内容，并将页面保存为完整长图。
+**[下载最新版本](https://github.com/xuziqiu/shiye-clipper/releases/latest) · [三分钟开始使用](#三分钟开始使用) · [交给 AI Agent](#ai-和自动化调用)**
 
-它同时提供：
+收藏一个网页很容易。真正麻烦的是：一次保存几十篇新闻、报告或资料页，还要逐页滚动、等待懒加载、检查失败项，并把文件整理成可追踪的结果。
 
-- 面向普通用户的本地网页控制台；
-- 面向脚本、Codex 和其他 AI Agent 的结构化 CLI；
-- 标准、高清和超清输出；
-- 标题或稳定数字序号命名；
-- 失败重试、人工处理和任务状态清单。
+**拾页 Shiye** 把这套重复劳动变成一个本地批处理任务：粘贴网址列表，它会调用电脑上的 Edge 或 Chrome，逐屏滚动并等待页面内容加载，然后保存完整长图和一份 `results.json` 任务清单。
 
-Shiye 本身不接入大模型，也不会把截图、网址或浏览器档案上传到外部服务。
+它既可以像普通应用一样使用网页控制台，也可以被脚本、Codex 或其他 AI Agent 稳定调用。Shiye 本身不接入大模型；网址、截图和浏览器档案默认都留在你的电脑上。
+
+## 为什么是拾页
+
+| 你真正需要的 | Shiye 提供的方式 |
+| --- | --- |
+| 一次保存一批网页 | 粘贴多个网址，或导入 TXT、CSV、TSV、JSON 列表 |
+| 保存视口之外的完整内容 | 自动滚动、等待懒加载，并尝试展开含义明确的“阅读全文” |
+| 图片既清晰又方便整理 | 标准 1×、高清 1.5×、超清 2×，支持标题或稳定数字序号命名 |
+| 知道哪些成功、哪些需要处理 | 自动重试、失败现场、逐项状态和持久化 `results.json` |
+| 既能手动使用，也能自动化 | 本地网页控制台＋结构化 CLI＋机器可读 JSON |
+| 不想把资料交给云端服务 | 本地运行，默认使用隔离浏览器环境，不读取日常浏览器档案 |
+
+## 适合这些场景
+
+- **新闻、研究与舆情资料归档**：把文章列表一次保存成可长期查看的视觉快照；
+- **品牌、公关与市场观察**：批量留存报道、竞品页面和活动页面，减少机械操作；
+- **内容与知识管理**：为选题、事实核查和项目资料建立带任务记录的截图素材库；
+- **脚本与 AI Agent 工作流**：通过稳定的退出码、stdout JSON 和 `results.json` 接入自动化流程。
+
+## 一次任务怎么完成
+
+1. 粘贴网址或交给 Shiye 一个列表文件；
+2. Shiye 在本机浏览器中逐页打开、滚动、等待并截图；
+3. 你得到完整长图、成功/失败统计和可继续重试的任务清单。
+
+## 和普通单页截图流程有什么不同
+
+如果只是偶尔保存当前页面，浏览器截图插件通常更直接。Shiye 更适合“已经有一批网址，希望一次处理完并知道结果”的任务。
+
+| | 常见单页截图流程 | Shiye |
+| --- | --- | --- |
+| 输入方式 | 打开当前页面后逐个操作 | 网址列表、文件或标准输入 |
+| 执行方式 | 人工重复点击 | 批量执行，可设置并发与重试 |
+| 输出管理 | 单张图片 | 图片＋稳定命名＋`results.json` |
+| 异常处理 | 逐页人工检查 | 记录失败原因，可见模式接管后重试 |
+| 自动化 | 以人工操作为主 | CLI、JSON、脚本和 AI Agent 可调用 |
 
 ## 项目状态
 
@@ -35,7 +72,7 @@ Shiye 本身不接入大模型，也不会把截图、网址或浏览器档案�
 
 Shiye 里的“AI 驱动”是指 AI 可以调用它的 CLI，不是把大模型接进截图工具。网址、图片和登录档案仍然保存在本机。
 
-## 普通用户：第一次安装
+## 三分钟开始使用
 
 1. 从 [Releases](https://github.com/xuziqiu/shiye-clipper/releases/latest) 下载 Source code (zip)，解压到一个固定目录。
 2. 确认电脑已经安装 [Node.js 20.9+](https://nodejs.org/)，以及 Microsoft Edge 或 Google Chrome。
@@ -257,6 +294,8 @@ examples/        可公开的输入示例
 ```
 
 ## 参与贡献
+
+如果 Shiye 帮你省下了逐页截图和整理文件的时间，欢迎给项目一个 Star，让更多需要批量网页归档的人看到它。功能建议和可公开复现的问题可以提交到 [Issues](https://github.com/xuziqiu/shiye-clipper/issues)。
 
 提交问题或代码前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。安全问题请遵循 [SECURITY.md](SECURITY.md)，不要在公开 Issue 中披露凭据、Cookie 或可利用细节。
 
